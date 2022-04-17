@@ -1,0 +1,77 @@
+{{extend './common/page.html'}}
+
+{{block 'title'}}{{/block}}
+
+
+{{block 'content'}}
+
+<div class="layui-layout layui-layout-admin">
+
+  <!-- 头部菜单栏 -->
+  {{include "./common/header.html"}}
+
+  <!-- 左侧菜单栏 -->
+  {{include "./common/leftMenu.html"}}
+
+  <div class="layui-body">
+    <!-- 内容主体区域 -->
+    <div style="padding: 15px;" id="content">
+      <div id="main" style="width: 600px;height:400px; margin: 100px auto;"></div>
+    </div>
+  </div>
+
+
+
+</div>
+{{/block}}
+
+
+{{block 'script'}}
+<script>
+  let myChart = echarts.init(document.getElementById('main'))
+
+  function chartFn(cateName, cateNum) {
+    let option = {
+      title: {
+        text: '文章分类统计',
+
+      },
+      tooltip: {},
+      legend: {
+        data: ['文章分类统计图']
+      },
+      xAxis: {
+        data: cateName
+      },
+      yAxis: {},
+      series: [{
+        name: '文章分类统计图',
+        data: cateNum,
+        type: 'bar',
+        itemStyle: {
+          color: '#99a7c3'
+        },
+        barWidth: 50
+      }]
+    };
+
+    myChart.setOption(option);
+
+  }
+
+
+  async function chartDataFn() {
+    let res = await $.get('/categoryListData');
+
+    let cateName = [];
+    let cateNum = [];
+    res.data.forEach(item => {
+      cateName.push(item.cate_name);
+      cateNum.push(item.count);
+    })
+    chartFn(cateName, cateNum);
+
+  }
+  chartDataFn()
+</script>
+{{/block}}

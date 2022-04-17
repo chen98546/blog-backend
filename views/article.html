@@ -1,0 +1,213 @@
+{{extend './common/page.html'}}
+
+{{block 'title'}}
+<style>
+    .delArticleBtn {
+        height: 28px;
+        line-height: 28px;
+    }
+
+    .layui-table-cell {
+        height: 35px;
+        line-height: 35px;
+    }
+
+    .box {
+        width: 400px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+    }
+
+    .searchWarp {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+</style>
+{{/block}}
+
+
+{{block 'content'}}
+
+<div class="layui-layout layui-layout-admin">
+
+    <!-- 头部菜单栏 -->
+    {{include "./common/header.html"}}
+
+    <!-- 左侧菜单栏 -->
+    {{include "./common/leftMenu.html"}}
+
+    <div class="layui-body">
+        <!-- 内容主体区域 -->
+        <div style="padding: 15px;">
+            <div class="box">
+                <div>
+                    <a href="/addArticle" class="addArticleBtn layui-btn layui-btn-primary layui-border-green"
+                        title="添加">
+                        <i class="layui-icon">&#xe61f;</i>
+                    </a>
+                </div>
+                <div class="searchWarp">
+                    <div class="layui-input-inline">
+                        <input type="text" name="title" id="keyword" required lay-verify="required" placeholder="请输入标题"
+                            style="margin: 10px 0 0; height: 38px; width:250px" autocomplete="off" class="layui-input">
+                    </div>
+                    <div>
+                        <button class="layui-btn layui-btn-primary layui-border-blue" id="searchBtn" lay-event="addData"
+                            style="margin: 10px 0 0;" title="添加">搜索</button>
+                    </div>
+                </div>
+            </div>
+
+            <table id="article_table" lay-filter="article_table"></table>
+
+        </div>
+    </div>
+
+    <div id="toolbarDemo">
+        <button class="delArticleBtn layui-btn layui-btn-primary layui-border-blue" lay-event="edit" title="编辑">
+            <i class="layui-icon">&#xe642;</i>
+        </button>
+        <button class="delArticleBtn layui-btn layui-btn-primary layui-border-red" lay-event="del" title="删除">
+            <i class="layui-icon">&#xe640;</i>
+        </button>
+    </div>
+
+</div>
+{{/block}}
+
+
+{{block 'script'}}
+
+<script>
+    // 内容预览
+    function showContentFn(content) {
+        let index = layer.open({
+            type: 1,
+            anim: 2,
+            title: false,
+            area: ["400px", "250px"],
+            content: `<h3 style="padding:20px">${content}</h3>`,
+        })
+    }
+
+    layui.use('table', function () {
+        let table = layui.table;
+
+        // 获取
+        function getArticleFn() {
+            table.render({
+                elem: '#article_table',
+                url: '/articleListData',
+                page: {
+                    limit: 6,
+                    prev: '上一页',
+                    next: '下一页'
+                },
+                cols: [
+                    [ // 表头
+                        {
+                            field: 'art_id',
+                            title: '文章ID',
+                            width: 100,
+                            sort: true
+                        }, {
+                            field: 'art_title',
+                            title: '标题',
+                        }, {
+                            field: 'art_content',
+                            title: '内容',
+                            width: 120,
+                            templet: ({
+                                art_content
+                            }) => {
+                                let moreContent = JSON.stringify(art_content);
+                                return `<a href="javascript:;" onclick='showContentFn(${moreContent})'>查看内容</a>`
+                            }
+                        }, {
+                            field: 'u_name',
+                            title: '作者',
+                            width: 80
+                        }, {
+                            field: 'art_status',
+                            title: '状态',
+                            width: 80
+
+                        }, {
+                            field: 'art_date',
+                            title: '时间',
+                        }, {
+                            field: 'pic',
+                            title: '封面图',
+                            templet: ({
+                                art_pic
+                            }) => {
+                                return `<a class="example-image-link" href="${art_pic}" data-lightbox="example-1">查看图片</a>`
+                            }
+                        }, {
+                            field: 'cate_name',
+                            title: '分类',
+                            width: 80
+
+                        }, {
+                            title: "操作",
+                            toolbar: "#toolbarDemo",
+                        }
+                    ]
+                ]
+            });
+
+        }
+        getArticleFn();
+
+
+        // 删除&添加
+        function delArticleFn() {
+            table.on("tool(article_table)", function (obj) {
+                let data = obj.data; // 获得当前行数据
+                let layEvent = obj.event; // 获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+                let tr = obj.tr; // 获得当前行 tr 的 DOM 对象（如果有的话）
+
+                if (layEvent === "del") {
+                    layer.confirm("确认删除", async function (index) {
+                        // 删除
+                        let res = await $.ajax({
+                            data,
+                            type: "delete",
+                            url: `/delArticle?id=${data.art_id}`,
+                        })
+                        if (res.code === 0) {
+                            console.log(res.code);
+                            layer.msg(res.message)
+                            obj.del(); // 删除对应行（tr）的DOM结构，并更新缓存
+                            table.reload('article_table');
+                            layer.close(index);
+                        }
+                    });
+                } else if (obj.event === 'edit') {
+                    // 编辑
+                    location.href = `/editArticle?id=${data.art_id}`;
+                }
+            });
+        }
+        delArticleFn();
+
+
+        // 搜索
+        function artSearchFn() {
+            $("#searchBtn").on('click', () => {
+                let keyword = $("#keyword").val();
+                table.reload('article_table', {
+                    where: {
+                        keyword
+                    }
+                });
+            })
+
+        }
+        artSearchFn();
+    });
+</script>
+{{/block}}

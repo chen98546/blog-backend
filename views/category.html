@@ -1,0 +1,146 @@
+{{extend './common/page.html'}}
+
+{{block 'title'}}
+<style>
+  .delCategoryBtn {
+    height: 28px;
+    line-height: 28px;
+  }
+
+  .layui-table-cell {
+    height: 35px;
+    line-height: 35px;
+  }
+</style>
+{{/block}}
+
+
+{{block 'content'}}
+
+<div class="layui-layout layui-layout-admin">
+
+  <!-- 头部菜单栏 -->
+  {{include "./common/header.html"}}
+
+  <!-- 左侧菜单栏 -->
+  {{include "./common/leftMenu.html"}}
+
+  <div class="layui-body">
+    <!-- 内容主体区域 -->
+    <div style="padding: 15px;">
+      <button class="addCategoryBtn layui-btn layui-btn-primary layui-border-green" title="添加">
+        <i class="layui-icon">&#xe61f;</i>
+      </button>
+
+      <table id="cate_table" lay-filter="cate_table">
+
+      </table>
+    </div>
+  </div>
+
+  <div id="toolbarDemo">
+    <button class="delCategoryBtn layui-btn layui-btn-primary layui-border-red" lay-event="del" title="删除">
+      <i class="layui-icon">&#xe640;</i>
+    </button>
+  </div>
+
+</div>
+{{/block}}
+
+
+{{block 'script'}}
+<script>
+  layui.use('table', function () {
+    let table = layui.table;
+
+
+    // 获取
+    function getCategoryFn() {
+      table.render({
+        elem: '#cate_table',
+        url: '/categoryListData',
+        cols: [
+          [ // 表头
+            {
+              field: 'cate_id',
+              title: 'ID',
+            }, {
+              field: 'cate_name',
+              title: '分类名称',
+              edit: true
+            }, {
+              field: 'count',
+              title: '总数',
+            }, {
+              title: "操作",
+              toolbar: "#toolbarDemo",
+            }
+          ]
+        ]
+      });
+    }
+    getCategoryFn();
+
+    
+    // 添加
+    function addCategoryFn() {
+      $('.addCategoryBtn').click(function () {
+        layer.prompt({
+          title: '请输入添加的分类名称',
+        }, async function (value, index, elem) {
+          let res = await $.post('/addCategory', {
+            cate_name: value
+          });
+          layer.msg('添加成功');
+          table.reload('cate_table');
+          layer.close(index);
+        });
+      })
+    }
+    addCategoryFn();
+
+
+    // 编辑
+    function editCategoryFn() {
+      table.on("edit(cate_table)", async function (obj) {
+        let res = await $.ajax({
+          type: "put",
+          url: "/editCategory",
+          data: obj.data,
+        });
+
+        if (res.code == 0) {
+          layer.msg(res.message);
+          table.reload('cate_table');
+        }
+      });
+    }
+    editCategoryFn();
+
+
+    // 删除
+    function delCategoryFn() {
+      table.on("tool(cate_table)", function (obj) {
+        let data = obj.data; // 获得当前行数据
+        let layEvent = obj.event; // 获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+        let tr = obj.tr; // 获得当前行 tr 的 DOM 对象（如果有的话）
+
+        if (layEvent === "del") {
+          layer.confirm("确认删除", async function (index) {
+            // 删除
+            let res = await $.ajax({
+              type: "delete",
+              url: `/delCategory?id=${data.cate_id}`,
+            })
+            layer.msg(res.message)
+            obj.del(); // 删除对应行（tr）的DOM结构，并更新缓存
+            layer.close(index);
+          });
+        }
+      });
+    }
+    delCategoryFn();
+
+  });
+</script>
+{{/block}}

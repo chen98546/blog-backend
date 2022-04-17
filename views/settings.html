@@ -1,0 +1,121 @@
+{{extend './common/page.html'}}
+
+{{block 'title'}}
+<style>
+    #form #logo {
+        width: 115px;
+    }
+
+    .layui-form-label {
+        width: 100px;
+    }
+
+
+    .confirm {
+        position: absolute;
+        right: 100px;
+        bottom: 50px;
+    }
+</style>
+{{/block}}
+
+
+{{block 'content'}}
+
+<div class="layui-layout layui-layout-admin">
+
+    <!-- 头部菜单栏 -->
+    {{include "./common/header.html"}}
+
+    <!-- 左侧菜单栏 -->
+    {{include "./common/leftMenu.html"}}
+
+
+    <div class="layui-body">
+        <!-- 内容主体区域 -->
+        <div style="padding: 15px;" id="content">
+            <form class="layui-form" action="" id="setForm">
+                <div class="layui-form-item">
+                    <label class="layui-form-label" id="logo">logo图片</label>
+                    <div class="layui-input-inline">
+                        <input type="file" name="set_logoPic" id="logoPicFile" onchange="logoPicFn(this)"
+                            style="display: none;">
+                        <span class="layui-btn layui-btn-primary layui-border-blue" id="logoFile"
+                            style="height: 30px; line-height: 30px;">上传logo图片</span>
+                        <div>
+                            <img src="" id="showLogoImg" alt="" style="width: 200px; margin-top: 50px;">
+                        </div>
+                    </div>
+
+                    <label class="layui-form-label" id="logo">修改LOGO</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="set_logo" required lay-verify="required" placeholder="请输入新的LOGO名称"
+                            autocomplete="off" class="layui-input" id="logoName">
+                    </div>
+                </div>
+
+                <div class="layui-form-item confirm">
+                    <div class="layui-input-block">
+                        <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                        <button class="layui-btn" lay-submit lay-filter="editSettings">确认修改</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{{/block}}
+
+
+{{block 'script'}}
+
+<script>
+    let logoFlag = 0;
+    let getLogoItem = localStorage.getItem("logoName");
+    $('#logoName').val(getLogoItem ? getLogoItem : '后台管理系统')
+    $('#logoFile').click(function () {
+        $('#logoPicFile')[0].click();
+    })
+
+    function logoPicFn(logoFile) {
+        let file = logoFile.files[0];
+        let reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = function () {
+            $('#showLogoImg').attr('src', this.result);
+            logoFlag = 1;
+        }
+    }
+
+
+
+
+    layui.use('form', function () {
+        let form = layui.form;
+
+        // 监听提交
+        form.on('submit(editSettings)', function (data) {
+            let formData = new FormData($('#setForm')[0])
+            formData.set('logoFlag', logoFlag)
+
+            layer.confirm('确认修改', function (index) {
+                $.ajax({
+                    url: '/editSettings',
+                    type: 'put',
+                    data: formData,
+                    contentType: false,
+                    processData: false
+                }).then(res => {
+                    $('#logoText').text(res[0].set_logo)
+                    $('#logoImg').attr('src', res[0].set_logoPic)
+                    localStorage.setItem('set_logoPic', res[0].set_logoPic);
+                    localStorage.setItem('logoName', res[0].set_logo);
+                    layer.msg('修改成功')
+                    layer.close(index);
+                })
+            });
+            return false;
+        });
+    });
+</script>
+{{/block}}

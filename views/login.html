@@ -1,0 +1,133 @@
+{{extend './common/page.html'}}
+
+
+{{block 'title'}}
+<title>登录页面</title>
+
+<style>
+    #loginForm input,
+    #loginForm button {
+        margin: 10px 0;
+    }
+
+    #loginForm #avatarWarp {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        margin: 20px auto;
+        overflow: hidden;
+    }
+
+    #showAvatarImg {
+        width: 100%;
+        height: 100%;
+    }
+
+    #loginForm #avatarWarp #avatarFile {
+        display: none;
+    }
+</style>
+{{/block}}
+
+
+
+{{block 'content'}}
+<div class="body">
+    <div class="login" style="width: 300px;">
+        <h1>登录</h1>
+        <form class="layui-form" method="post" id="loginForm">
+            <div id="avatarWarp">
+                <img src="1.webp" alt="" id="showAvatarImg">
+            </div>
+            <input type="text" class="input" name="username" id="loginUname" placeholder="请输入用户名" autocomplete="off" />
+            <input type="password" class="input" name="password" placeholder="请输入密码" autocomplete value="654321" />
+
+
+            <button type="submit" id="loginBtn" class="btn btn-primary btn-block btn-large" lay-submit
+                lay-filter="loginBtn">登录</button>
+            <a href="/register" id="" class="btn btn-primary btn-block btn-large">注册</a>
+        </form>
+    </div>
+</div>
+{{/block}}
+
+
+{{block 'script'}}
+<script>
+    // 根据用户名回显头像
+    $('#loginUname').on('change', function () {
+        $.get('/getUsersData').then(res => {
+            let result = res.find(item => {
+                let confirmInfo = $('#loginUname').val() == item.u_name;
+                return confirmInfo;
+            });
+            if (result) {
+                $('#showAvatarImg').attr('src', result.u_avatar);
+            } else {
+                $('#showAvatarImg').attr('src', '1.webp');
+            }
+        })
+    })
+
+
+    // 判断input值是否为空的正则表达式
+    let emptyReg = /^\s*$/;
+    // 判断用户名是否正确的正则表达式
+    let usernameReg = /^[a-zA-Z0-9_\u4e00-\u9fa5]{2,12}$/;
+    // // 判断密码是否正确的正则表达式
+    // let passwordReg = /^[a-zA-Z0-9_]{6,15}$/;
+    // 特殊字符正则表达式
+    let regSpecial = /[`~!=\-@#$%^&*()——……《》，。！：；|、\\·+<>?:"{},.\/;'[\]\s+]/im;
+
+
+    layui.use(['form', 'layer'], function () {
+        let form = layui.form;
+        let layer = layui.layer;
+
+        // 监听登录按钮
+        form.on('submit(loginBtn)', function (formField) {
+            let data = formField.field;
+            let {
+                username,
+                password,
+            } = data;
+
+            // 判断账号密码是否为空
+            if (emptyReg.test(username) || emptyReg.test(password)) {
+                layer.msg('账号或密码不能为空')
+                return false
+            }
+
+            // 判断用户名长度
+            if (username.length > 12 || username.length < 2) {
+                layer.msg('请输入2-12位的用户名')
+                return false
+            }
+
+            // 判断用户名和密码是否有特殊符号
+            if (regSpecial.test(username) || regSpecial.test(password)) {
+                layer.msg('名称或密码不能包含特殊字符')
+                return false
+            }
+
+            // 判断密码长度
+            if (password.length > 15 || password.length < 6) {
+                layer.msg('请输入6-15位的密码')
+                return false
+            }
+
+
+            // 验证用户信息
+            $.post('/verifyLoginInfo', data).then(res => {
+                if (res.code === 0) {
+                    location.href = '/';
+                } else {
+                    layer.msg(res.message);
+                }
+            })
+
+            return false;
+        })
+    })
+</script>
+{{/block}}

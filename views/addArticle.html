@@ -1,0 +1,191 @@
+{{extend './common/page.html'}}
+
+{{block 'title'}}
+<style>
+    .layui-form-label {
+        width: 86px;
+    }
+
+    #previewImg {
+        position: relative;
+        left: 870px;
+        bottom: 105px;
+    }
+
+    /* .wangeditor {
+        width: 600px;
+        position: relative;
+        border: 1px solid red;
+    } */
+
+    #wangEditor {
+        width: 835px;
+        position: absolute;
+        top: 145px;
+        left: 25px;
+    }
+
+    .layuiItem {
+        position: absolute;
+        right: 110px;
+        bottom: 30px;
+    }
+
+    .layui-form-select dl {
+        z-index: 999999;
+    }
+</style>
+{{/block}}
+
+
+{{block 'content'}}
+
+<div class="layui-layout layui-layout-admin">
+
+    <!-- 头部菜单栏 -->
+    {{include "./common/header.html"}}
+
+    <!-- 左侧菜单栏 -->
+    {{include "./common/leftMenu.html"}}
+
+    <div class="layui-body">
+        <!-- 内容主体区域 -->
+        <div style="padding: 15px;">
+            <form class="layui-form" id="addArticleForm">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">输入框</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="art_title" lay-verify="required" placeholder="请输入文章标题"
+                            autocomplete="off" class="layui-input">
+                    </div>
+
+                    <label class="layui-form-label">发布时间</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="art_date" lay-verify="required" placeholder="请输入发布时间"
+                            autocomplete="off" class="layui-input" id="art_date">
+                    </div>
+
+                    <label class="layui-form-label">分类</label>
+                    <div class="layui-input-inline">
+                        <select name="cate_id" lay-verify="required" id="cate_id"></select>
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">作者</label>
+                    <div class="layui-input-inline">
+                        <input type="number" name="art_author" lay-verify="required" placeholder="请输入文章作者"
+                            autocomplete="off" class="layui-input">
+                    </div>
+
+                    <label class="layui-form-label">状态</label>
+                    <div class="layui-input-inline">
+                        <input type="radio" name="art_status" value="0" title="未审核" checked>
+                        <input type="radio" name="art_status" value="1" title="已审核">
+                    </div>
+
+                    <label class="layui-form-label">选择封面</label>
+                    <div class="layui-input-inline" style="width: 110px;">
+                        <input type="file" name="art_pic" style="display: none;" id="artFile"
+                            onchange="artFileFn(this)">
+                        <span class="layui-btn layui-btn-primary layui-border-blue" id="addArtFile">上传图片</span>
+                    </div>
+                    <label class="layui-form-label" id="text" style="display: none; width: 100px;">图片预览：</label>
+                </div>
+
+                <div class="layui-form-item" id="previewImg">
+                    <div class="layui-input-inline">
+                        <img src="" style="width:250px; display: none;" alt="" id="showAddImg">
+                    </div>
+                </div>
+
+                <!-- 富文本 -->
+                <div id="wangEditor"></div>
+
+
+                <div class="layui-form-item layuiItem">
+                    <div class="layui-input-block">
+                        <button class="layui-btn" lay-submit lay-filter="addArticleBtn">立即提交</button>
+                        <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+{{/block}}
+
+
+{{block 'script'}}
+<script src="https://cdn.jsdelivr.net/npm/wangeditor@latest/dist/wangEditor.min.js"></script>
+<script type="text/javascript">
+    const E = window.wangEditor
+    const editor = new E("#wangEditor")
+    editor.create();
+
+    let addFlag = 0;
+    $('#addArtFile').click(function () {
+        $('#artFile')[0].click()
+    })
+
+    function artFileFn(artFile) {
+        let file = artFile.files[0];
+        let reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = function () {
+            $('#showAddImg').attr('src', this.result).css('display', 'block');
+            $('#text').css('display', 'block');
+            addFlag = 1;
+        }
+    }
+
+
+
+
+
+
+    layui.use('form', function () {
+        let form = layui.form;
+        let laydate = layui.laydate;
+        laydate.render({
+            elem: '#art_date',
+            type: 'datetime'
+        })
+
+        async function getCategoryDataFn() {
+            let res = await $.get('/categoryListData');
+            let str = '<option value=""></option>';
+            res.data.forEach(item => {
+                str += `<option value="${item.cate_id}">${item.cate_name}</option>`;
+            });
+            $('#cate_id').html(str);
+            form.render('select');
+        }
+        getCategoryDataFn();
+
+
+        form.on('submit(addArticleBtn)', function (data) {
+            let formData = new FormData($('#addArticleForm')[0]);
+            let editorText = editor.txt.html();
+            formData.set('editorText', editorText);
+            formData.set('addFlag', addFlag);
+
+            $.ajax({
+                type: 'post',
+                url: '/addArticleData',
+                data: formData,
+                contentType: false,
+                processData: false
+            }).then(res => {
+                if (res.code === 0) {
+                    layer.msg(res.message);
+                    location.replace('/article')
+                }
+            })
+
+            return false;
+        })
+    })
+</script>
+{{/block}}
