@@ -114,6 +114,7 @@ ArticleCon.addArticleData = async (req, res) => {
 
     } else {
         art_pic = '1.webp'
+        
         sql = `insert into tb_article (art_title,art_date,cate_id,art_author,art_status,art_pic,art_content) values('${art_title}','${art_date}',${cate_id},${art_author},${art_status},'${art_pic}','${editorText}')`;
 
     }

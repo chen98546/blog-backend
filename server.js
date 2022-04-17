@@ -2,11 +2,15 @@ const express = require('express');
 const path = require('path');
 const express_template = require('express-art-template');
 const session = require('express-session');
+const cors = require('cors')
 
 const router = require('./router/router.js');
+const apiRouter = require('./router/apiRouter.js');
 const middleware = require('./middleware/middleware.js');
 
 const app = express();
+
+app.use(cors())
 
 app.use(express.json());
 app.use(express.urlencoded({
@@ -24,6 +28,9 @@ app.set('view engine', 'html');
 app.use(express.static(path.join(__dirname, '/assets')))
 app.use('/images', express.static(path.join(__dirname, '/images')))
 app.use(express.static(path.join(__dirname, '/uploads')))
+
+
+app.use('/api', apiRouter)
 
 
 app.use(session({
