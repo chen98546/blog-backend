@@ -18,6 +18,8 @@
 - moment
 - multer
 - mysql
+- eslint
+- cors
 
 
 
