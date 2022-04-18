@@ -80,7 +80,6 @@
 
 
 {{block 'script'}}
-
 <script>
     // 内容预览
     function showContentFn(content) {
@@ -179,7 +178,6 @@
                             url: `/delArticle?id=${data.art_id}`,
                         })
                         if (res.code === 0) {
-                            console.log(res.code);
                             layer.msg(res.message)
                             obj.del(); // 删除对应行（tr）的DOM结构，并更新缓存
                             table.reload('article_table');

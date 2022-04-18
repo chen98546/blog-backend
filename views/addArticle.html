@@ -125,10 +125,12 @@
     editor.create();
 
     let addFlag = 0;
+    // 上传文件单击事件
     $('#addArtFile').click(function () {
         $('#artFile')[0].click()
     })
 
+    // 预览图片
     function artFileFn(artFile) {
         let file = artFile.files[0];
         let reader = new FileReader();
@@ -142,17 +144,16 @@
 
 
 
-
-
-
     layui.use('form', function () {
         let form = layui.form;
         let laydate = layui.laydate;
+        // 时间
         laydate.render({
             elem: '#art_date',
             type: 'datetime'
         })
 
+        // 获取分类数据
         async function getCategoryDataFn() {
             let res = await $.get('/categoryListData');
             let str = '<option value=""></option>';
@@ -171,6 +172,7 @@
             formData.set('editorText', editorText);
             formData.set('addFlag', addFlag);
 
+            // 添加
             $.ajax({
                 type: 'post',
                 url: '/addArticleData',
@@ -183,7 +185,6 @@
                     location.replace('/article')
                 }
             })
-
             return false;
         })
     })

@@ -208,13 +208,13 @@ layui.use(['element', 'layer', 'form', 'util'], function () {
                         <h1 style="margin:20px 0">修改密码</h1>
                         <form class="layui-form" active="/editPwdForm" method="post" id="editPwdForm">
                             <div class="layui-form-item">
-                                <input type="password" name="password1" oncopy="return false" onpaste="return false" oncut="return false" placeholder="请输入原密码" autocomplete="off">
+                                <input type="password" class="input" name="password1" oncopy="return false" onpaste="return false" oncut="return false" placeholder="请输入原密码" autocomplete="off">
                             </div>
                             <div class="layui-form-item">
-                                <input type="password" name="password2" oncopy="return false" onpaste="return false" oncut="return false" placeholder="请输入新密码" autocomplete="off">
+                                <input type="password" class="input" name="password2" oncopy="return false" onpaste="return false" oncut="return false" placeholder="请输入新密码" autocomplete="off">
                             </div>
                             <div class="layui-form-item">
-                                <input type="password" name="password3" oncopy="return false" onpaste="return false" oncut="return false" placeholder="请确认新密码" autocomplete="off">
+                                <input type="password" class="input" name="password3" oncopy="return false" onpaste="return false" oncut="return false" placeholder="请确认新密码" autocomplete="off">
                             </div>
                             <div class="layui-form-item">
                                 <button id="editPwdBtn" class="btn-primary btn-block btn-large layui-btn" lay-filter="editPwdBtn" lay-submit>修改</button>

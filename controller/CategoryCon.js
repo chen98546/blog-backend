@@ -13,7 +13,6 @@ CategoryCon.category = (req, res) => {
 CategoryCon.categoryListData = async (req, res) => {
     let sql = `SELECT t1.*,COUNT(t2.cate_id) count FROM tb_category t1 LEFT JOIN tb_article t2  ON t1.cate_id = t2.cate_id GROUP BY t1.cate_id`;
     let data = await query(sql)
-    console.log(data);
     let responseData = {
         data,
         code: 0,
