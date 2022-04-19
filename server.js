@@ -1,3 +1,5 @@
+// 服务模块
+
 const express = require('express');
 const path = require('path');
 const express_template = require('express-art-template');
@@ -5,8 +7,6 @@ const session = require('express-session');
 const cors = require('cors')
 const chokidar = require('chokidar');
 const execSh = require('exec-sh');
-
-
 
 
 const router = require('./router/router.js');
@@ -56,7 +56,7 @@ let {
 // 判断session 中间件
 app.use(checkSessionAuth);
 
-app.use(router)
+app.use(router);
 
 
 
