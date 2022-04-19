@@ -38,7 +38,7 @@ frontendCon.frontDetailArt = async (req, res) => {
     } = req.query;
     let sql = `SELECT t1.*,t2.cate_name,t3.u_name FROM tb_article t1 LEFT JOIN tb_category t2 on t1.cate_id = t2.cate_id LEFT JOIN tb_users t3 on t1.art_author = t3.u_id where t1.art_id = ${id}`;
     let data = await query(sql);
-    res.json(data)
+    res.json(data);
 }
 
 

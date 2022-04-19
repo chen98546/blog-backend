@@ -1,3 +1,5 @@
+<!-- 设置页面 -->
+
 {{extend './common/page.html'}}
 
 {{block 'title'}}
@@ -70,52 +72,61 @@
 {{block 'script'}}
 
 <script>
-    let logoFlag = 0;
-    let getLogoItem = localStorage.getItem("logoName");
-    $('#logoName').val(getLogoItem ? getLogoItem : '后台管理系统')
-    $('#logoFile').click(function () {
-        $('#logoPicFile')[0].click();
-    })
+    (function () {
+        // 判断用户是否上传logo图片
+        let fileFlag = 0;
+        // 获取本地存储的logo名
+        let getLogoItem = localStorage.getItem("logoName");
+        $('#logoName').val(getLogoItem ? getLogoItem : '后台管理系统');
+        // 执行logoPicFile的单击事件
+        $('#logoFile').click(function () {
+            $('#logoPicFile')[0].click();
+        })
 
-    function logoPicFn(logoFile) {
-        let file = logoFile.files[0];
-        let reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = function () {
-            $('#showLogoImg').attr('src', this.result);
-            logoFlag = 1;
+        // 预览图片
+        window.logoPicFn = function (logoFile) {
+            let file = logoFile.files[0];
+            let reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = function () {
+                $('#showLogoImg').attr('src', this.result);
+                fileFlag = 1;
+            }
         }
-    }
 
 
 
 
-    layui.use('form', function () {
-        let form = layui.form;
+        layui.use('form', function () {
+            let form = layui.form;
 
-        // 监听提交
-        form.on('submit(editSettings)', function (data) {
-            let formData = new FormData($('#setForm')[0])
-            formData.set('logoFlag', logoFlag)
+            // 监听提交
+            form.on('submit(editSettings)', function (data) {
+                let formData = new FormData($('#setForm')[0]);
+                formData.set('fileFlag', fileFlag);
 
-            layer.confirm('确认修改', function (index) {
-                $.ajax({
-                    url: '/editSettings',
-                    type: 'put',
-                    data: formData,
-                    contentType: false,
-                    processData: false
-                }).then(res => {
-                    $('#logoText').text(res[0].set_logo)
-                    $('#logoImg').attr('src', res[0].set_logoPic)
-                    localStorage.setItem('set_logoPic', res[0].set_logoPic);
-                    localStorage.setItem('logoName', res[0].set_logo);
-                    layer.msg('修改成功')
+                layer.confirm('确认修改', async function (index) {
+                    let res = await $.ajax({
+                        url: '/editSettings',
+                        type: 'put',
+                        data: formData,
+                        contentType: false,
+                        processData: false
+                    })
+                    let {
+                        set_logo,
+                        set_logoPic
+                    } = res[0]
+                    $('#logoText').text(set_logo);
+                    $('#logoImg').attr('src', set_logoPic);
+                    localStorage.setItem('set_logoPic', set_logoPic);
+                    localStorage.setItem('logoName', set_logo);
+                    layer.msg('修改成功');
                     layer.close(index);
-                })
+                });
+                return false;
             });
-            return false;
         });
-    });
+    })()
 </script>
 {{/block}}

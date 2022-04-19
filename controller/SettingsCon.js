@@ -1,52 +1,36 @@
 // 设置控制器
 
-const fs = require('fs')
-const path = require('path')
 const md5 = require('md5');
 
 const {
     pass_secret
-} = require('../config/pass_secret.js')
-const query = require('../mysql/connection.js')
+} = require('../config/pass_secret.js');
+const query = require('../mysql/connection.js');
+const method = require('../method/method.js');
+
 
 let SettingsCon = {}
 
 
 SettingsCon.settings = (req, res) => {
-    res.render('settings.html')
+    // 设置页面
+    res.render('settings.html');
 }
 
 
 // logo名修改
 SettingsCon.editSettings = async (req, res) => {
-    let {
-        set_logo,
-        logoFlag
-    } = req.body;
+    method.bodyDataFn(req.body);
     let sql;
 
-
-    let set_logoPic;
-
-    if (logoFlag == 1) {
-        let {
-            originalname,
-            destination,
-            filename
-        } = req.file;
-
-        let extname = path.extname(originalname);
-        fs.renameSync(
-            path.join(`${path.dirname(__dirname)}/${destination+filename}`),
-            path.join(`${path.dirname(__dirname)}/${destination+filename+extname}`)
-        );
-
+    if (fileFlag == 1) {
+        method.fileDataFn(req.file);
+        method.renameFn(req.file);
         set_logoPic = filename + extname
         sql = `update tb_settings set set_logo='${set_logo}', set_logoPic = '${set_logoPic}'`;
 
     } else {
         sql = `update tb_settings set set_logo='${set_logo}'`;
-
     }
     let {
         affectedRows
@@ -61,40 +45,24 @@ SettingsCon.editSettings = async (req, res) => {
 
 // 个人信息设置
 SettingsCon.amendPersonalData = async (req, res) => {
-    let {
-        username,
-        personalAvatar,
-        avatarPath,
-        isEditUserInfo
-    } = req.body;
+    method.bodyDataFn(req.body);
     let {
         u_id
     } = req.session.record;
+    let sql;
 
-
-    if (isEditUserInfo == 1) {
-        let {
-            originalname,
-            destination,
-            filename
-        } = req.file
-
-        // 图片后缀
-        let extname = path.extname(originalname);
-        // 原图完整路径
-        avatarPath = path.join(`${path.dirname(__dirname)}/${destination+avatarPath}`)
-        // 重命名
-        fs.renameSync(
-            path.join(`${path.dirname(__dirname)}/${destination+filename}`),
-            path.join(`${path.dirname(__dirname)}/${destination+filename+extname}`)
-        );
+    if (fileFlag == 1) {
+        method.fileDataFn(req.file);
+        method.renameFn(req.file);
         // 拼接路径
-        personalAvatar = filename + extname;
-        sql = `update tb_users set u_name='${username}',u_avatar='${personalAvatar}' where u_id = ${u_id}`;
+        u_avatar = filename + extname;
+        sql = `update tb_users set u_name='${u_name}',u_avatar='${u_avatar}' where u_id = ${u_id}`;
+        // 原图完整路径
+        picPath = method.joinFn(destination + picPath);
         // 删除原图
-        fs.unlink(avatarPath, (err) => {})
+        method.unlinkFn(picPath);
     } else {
-        sql = `update tb_users set u_name='${username}' where u_id = ${u_id}`;
+        sql = `update tb_users set u_name='${u_name}' where u_id = ${u_id}`;
     }
 
     let {
@@ -115,25 +83,20 @@ SettingsCon.amendPersonalData = async (req, res) => {
 }
 
 
-
 // 密码修改
 SettingsCon.editPwdForm = async (req, res) => {
-    let {
-        password1,
-        password2,
-        password3
-    } = req.body;
+    method.bodyDataFn(req.body);
 
     let {
         u_id
     } = req.session.record;
 
-    password1 = md5(`${password1}${pass_secret}`)
+    u_password = md5(`${u_password}${pass_secret}`)
     password2 = md5(`${password2}${pass_secret}`)
     password3 = md5(`${password3}${pass_secret}`)
 
 
-    if (password1 === req.session.record.u_password && password2 === password3) {
+    if (u_password === req.session.record.u_password && password2 === password3) {
         let sql = `update tb_users set u_password='${password3}' where u_id = ${u_id}`;
         let {
             affectedRows
@@ -146,7 +109,7 @@ SettingsCon.editPwdForm = async (req, res) => {
                 }
             })
             let responseData = {
-                password1,
+                u_password,
                 code: 0,
                 message: '密码修改成功'
             }
@@ -157,13 +120,12 @@ SettingsCon.editPwdForm = async (req, res) => {
         }
     } else {
         let responseData = {
-            password1,
+            u_password,
             code: -1,
             message: '密码修改失败'
         }
         res.json(responseData);
     }
-
 
 
 }

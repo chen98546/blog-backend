@@ -1,8 +1,8 @@
 // 登录控制器
 
 const md5 = require('md5');
-
-const query = require('../mysql/connection.js')
+const query = require('../mysql/connection.js');
+const method = require('../method/method.js');
 const {
     pass_secret
 } = require('../config/pass_secret.js')
@@ -10,19 +10,16 @@ const {
 
 let LoginCon = {};
 
+// 登录页面
 LoginCon.login = (req, res) => {
     res.render('login.html')
 }
 
 LoginCon.verifyLoginInfo = async (req, res) => {
-    let {
-        username,
-        password
-    } = req.body
+    method.bodyDataFn(req.body);
+    u_password = md5(`${u_password}${pass_secret}`);
 
-    password = md5(`${password}${pass_secret}`);
-
-    let sql = `SELECT * FROM tb_users WHERE u_name='${username}' AND u_password='${password}'`;
+    let sql = `SELECT * FROM tb_users WHERE u_name='${u_name}' AND u_password='${u_password}'`;
     let data = await query(sql);
     if (data.length > 0) {
         req.session.record = data[0];

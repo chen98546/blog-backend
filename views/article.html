@@ -1,3 +1,5 @@
+<!-- 文章列表 -->
+
 {{extend './common/page.html'}}
 
 {{block 'title'}}
@@ -81,33 +83,33 @@
 
 {{block 'script'}}
 <script>
-    // 内容预览
-    function showContentFn(content) {
-        let index = layer.open({
-            type: 1,
-            anim: 2,
-            title: false,
-            area: ["400px", "250px"],
-            content: `<h3 style="padding:20px">${content}</h3>`,
-        })
-    }
+    (function () {
+        // 内容预览
+        function showContentFn(content) {
+            let index = layer.open({
+                type: 1,
+                anim: 2,
+                title: false,
+                area: ["400px", "250px"],
+                content: `<h3 style="padding:20px">${content}</h3>`,
+            })
+        }
 
-    layui.use('table', function () {
-        let table = layui.table;
+        layui.use('table', function () {
+            let table = layui.table;
 
-        // 获取
-        function getArticleFn() {
-            table.render({
-                elem: '#article_table',
-                url: '/articleListData',
-                page: {
-                    limit: 6,
-                    prev: '上一页',
-                    next: '下一页'
-                },
-                cols: [
-                    [ // 表头
-                        {
+            // 获取
+            function getArticleFn() {
+                table.render({
+                    elem: '#article_table',
+                    url: '/articleListData',
+                    page: {
+                        limit: 6,
+                        prev: '上一页',
+                        next: '下一页'
+                    },
+                    cols: [
+                        [{
                             field: 'art_id',
                             title: '文章ID',
                             width: 100,
@@ -153,59 +155,59 @@
                         }, {
                             title: "操作",
                             toolbar: "#toolbarDemo",
-                        }
+                        }]
                     ]
-                ]
-            });
+                });
 
-        }
-        getArticleFn();
-
-
-        // 删除&添加
-        function delArticleFn() {
-            table.on("tool(article_table)", function (obj) {
-                let data = obj.data; // 获得当前行数据
-                let layEvent = obj.event; // 获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
-                let tr = obj.tr; // 获得当前行 tr 的 DOM 对象（如果有的话）
-
-                if (layEvent === "del") {
-                    layer.confirm("确认删除", async function (index) {
-                        // 删除
-                        let res = await $.ajax({
-                            data,
-                            type: "delete",
-                            url: `/delArticle?id=${data.art_id}`,
-                        })
-                        if (res.code === 0) {
-                            layer.msg(res.message)
-                            obj.del(); // 删除对应行（tr）的DOM结构，并更新缓存
-                            table.reload('article_table');
-                            layer.close(index);
-                        }
-                    });
-                } else if (obj.event === 'edit') {
-                    // 编辑
-                    location.href = `/editArticle?id=${data.art_id}`;
-                }
-            });
-        }
-        delArticleFn();
+            }
+            getArticleFn();
 
 
-        // 搜索
-        function artSearchFn() {
-            $("#searchBtn").on('click', () => {
-                let keyword = $("#keyword").val();
-                table.reload('article_table', {
-                    where: {
-                        keyword
+            // 删除&添加
+            function delArticleFn() {
+                table.on("tool(article_table)", function (obj) {
+                    let data = obj.data; // 获得当前行数据
+                    let layEvent = obj.event; // 获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+                    let tr = obj.tr; // 获得当前行 tr 的 DOM 对象（如果有的话）
+
+                    if (layEvent === "del") {
+                        layer.confirm("确认删除", async function (index) {
+                            // 删除
+                            let res = await $.ajax({
+                                data,
+                                type: "delete",
+                                url: `/delArticle?id=${data.art_id}`,
+                            })
+                            if (res.code === 0) {
+                                layer.msg(res.message)
+                                obj.del(); // 删除对应行（tr）的DOM结构，并更新缓存
+                                table.reload('article_table');
+                                layer.close(index);
+                            }
+                        });
+                    } else if (obj.event === 'edit') {
+                        // 编辑
+                        location.href = `/editArticle?id=${data.art_id}`;
                     }
                 });
-            })
+            }
+            delArticleFn();
 
-        }
-        artSearchFn();
-    });
+
+            // 搜索
+            function artSearchFn() {
+                $("#searchBtn").on('click', () => {
+                    let keyword = $("#keyword").val();
+                    table.reload('article_table', {
+                        where: {
+                            keyword
+                        }
+                    });
+                })
+
+            }
+            artSearchFn();
+        });
+    })()
 </script>
 {{/block}}

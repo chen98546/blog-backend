@@ -1,3 +1,6 @@
+<!-- 注册页面 -->
+
+
 {{extend './common/page.html'}}
 
 
@@ -37,23 +40,23 @@
         <h1>注册</h1>
         <form class="layui-form" method="post" id="registerForm">
             <div id="avatarWarp">
-                <input type="file" name="registerAvatar" id="avatarFile" onchange="avatarFileFn(this)" />
-                <img src="1.webp" alt="" id="avatarImg">
+                <input type="file" name="u_avatar" id="avatarFile" onchange="avatarFileFn(this)" />
+                <img src="images/avatar.webp" alt="" id="avatarImg">
             </div>
-            <input type="text" class="input" name="username" placeholder="请输入用户名" autocomplete="off" />
-            <input type="password" class="input" name="password1" placeholder="请输入密码" autocomplete />
+            <input type="text" class="input" name="u_name" placeholder="请输入用户名" autocomplete="off" />
+            <input type="password" class="input" name="u_password" placeholder="请输入密码" autocomplete />
             <input type="password" class="input" name="password2" placeholder="请确认密码" autocomplete />
             <div class="layui-form-item" style="color: #fff;">
                 <label class="layui-form-label" style="text-align: left;">性别</label>
                 <div class="layui-input-block" style="margin-left: 80px;">
-                    <input type="radio" name="sex" value="1" title="男">
-                    <input type="radio" name="sex" value="2" title="女">
-                    <input type="radio" name="sex" value="0" title="保密" checked>
+                    <input type="radio" name="u_sex" value="1" title="男">
+                    <input type="radio" name="u_sex" value="2" title="女">
+                    <input type="radio" name="u_sex" value="0" title="保密" checked>
                 </div>
             </div>
             <div class="layui-form-item layui-form-text">
                 <div class="layui-input-block" style="margin-left: 0;">
-                    <textarea name="intro" style="background: rgba(0, 0, 0, 0.3); border:none" placeholder="请输入个性签名（选填）"
+                    <textarea name="u_intro" style="background: rgba(0, 0, 0, 0.3); border:none" placeholder="请输入个性签名（选填）"
                         class="layui-textarea"></textarea>
                 </div>
             </div>
@@ -68,7 +71,7 @@
 
 {{block 'script'}}
 <script>
-    let atrFileFlag = 0;
+    let fileFlag = 0;
     // 执行选择文件avatarFile的单击事件
     $('#avatarWarp').click(function () {
         $('#avatarFile')[0].click();
@@ -81,63 +84,63 @@
         reader.readAsDataURL(file);
         reader.onload = function () {
             $('#avatarImg').attr('src', this.result)
-            atrFileFlag = 1;
+            fileFlag = 1;
         }
     }
 
-    // 判断input值是否为空的正则表达式
-    let emptyReg = /^\s*$/;
+    // // 判断input值是否为空的正则表达式
+    // let emptyReg = /^\s*$/;
     // 判断用户名是否正确的正则表达式
     let usernameReg = /^[a-zA-Z0-9_\u4e00-\u9fa5]{2,12}$/;
     // 判断密码是否正确的正则表达式
     let passwordReg = /^[a-zA-Z0-9_]{6,15}$/;
-    // 特殊字符正则表达式
-    let regSpecial = /[`~!=\-@#$%^&*()——……《》，。！：；|、\\·+<>?:"{},.\/;'[\]\s+]/im;
+    // // 特殊字符正则表达式
+    // let regSpecial = /[`~!=\-@#$%^&*()——……《》，。！：；|、\\·+<>?:"{},.\/;'[\]\s+]/im;
 
 
     layui.use(['form', 'layer'], function () {
         let form = layui.form;
         let layer = layui.layer;
 
-        // 监听注册按钮
+        // 监听注册表单
         form.on('submit(registerBtn)', function (formField) {
             let data = formField.field;
             let formData = new FormData($('#registerForm')[0]);
-            formData.set('atrFileFlag', atrFileFlag);
+            formData.set('fileFlag', fileFlag);
             let {
-                username,
-                password1,
+                u_name,
+                u_password,
                 password2
             } = data;
 
             // 判断账号密码是否为空
-            if (emptyReg.test(username) || emptyReg.test(password1) || emptyReg.test(password2)) {
+            if (emptyReg.test(u_name) || emptyReg.test(u_password) || emptyReg.test(password2)) {
                 layer.msg('账号或密码不能为空')
                 return false
             }
 
             // 判断用户名长度
-            if (username.length > 12 || username.length < 2) {
+            if (u_name.length > 12 || u_name.length < 2) {
                 layer.msg('请输入2-12位的用户名')
                 return false
             }
 
             // 判断用户名和密码是否有特殊符号
-            if (regSpecial.test(username) || regSpecial.test(password1) || regSpecial.test(
+            if (regSpecial.test(u_name) || regSpecial.test(u_password) || regSpecial.test(
                     password2)) {
                 layer.msg('名称或密码不能包含特殊字符')
                 return false
             }
 
             // 判断密码长度
-            if (password1.length > 15 || password1.length < 6 || password2.length > 15 || password2
+            if (u_password.length > 15 || u_password.length < 6 || password2.length > 15 || password2
                 .length < 6) {
                 layer.msg('请输入6-15位的密码')
                 return false
             }
 
             // 判断两次密码是否一致
-            if (password1 !== password2) {
+            if (u_password !== password2) {
                 layer.msg('两次密码不一致，请确认后重新输入')
                 return false
             }
@@ -146,37 +149,37 @@
             $.get('/getUsersData').then(res => {
                 // 查询用户名是否已被注册
                 let result = res.find(item => {
-                    let isExistUname = item.u_name === username;
+                    let isExistUname = item.u_name === u_name;
                     return isExistUname;
                 })
 
                 if (result) {
-                    layer.msg('该用户名已被注册')
-                    return false
+                    layer.msg('该用户名已被注册');
+                    return false;
                 } else {
                     // 注册
-                    $.ajax({
-                        type: 'post',
-                        url: '/registerUsersData',
-                        data: formData,
-                        dataType: 'json',
-                        contentType: false,
-                        processData: false
-                    }).then(res => {
+                    async function registerFn() {
+                        let res = await $.ajax({
+                            type: 'post',
+                            url: '/registerUsersData',
+                            data: formData,
+                            dataType: 'json',
+                            contentType: false,
+                            processData: false
+                        })
                         layer.alert('返回登录', {
-                            icon: 3,
+                            icon: 1,
                             title: res.message,
                             closeBtn: 0
                         }, function (index) {
                             // replace 重新定向URL，不会在历史记录中生成新纪录（没有后退按钮）
                             location.replace('/login');
                             layer.close(index);
-                        });
-                    })
+                        })
+                    }
+                    registerFn();
                 }
-
             })
-
             return false;
         })
     })

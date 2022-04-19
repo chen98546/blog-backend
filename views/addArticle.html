@@ -1,3 +1,5 @@
+<!-- 文章添加页面 -->
+
 {{extend './common/page.html'}}
 
 {{block 'title'}}
@@ -120,73 +122,84 @@
 {{block 'script'}}
 <script src="https://cdn.jsdelivr.net/npm/wangeditor@latest/dist/wangEditor.min.js"></script>
 <script type="text/javascript">
-    const E = window.wangEditor
-    const editor = new E("#wangEditor")
-    editor.create();
+    (function () {
+        // 富文本
+        const E = window.wangEditor;
+        const editor = new E("#wangEditor");
+        editor.create();
 
-    let addFlag = 0;
-    // 上传文件单击事件
-    $('#addArtFile').click(function () {
-        $('#artFile')[0].click()
-    })
+        // 判断用户是否上传图片
+        let fileFlag = 0;
 
-    // 预览图片
-    function artFileFn(artFile) {
-        let file = artFile.files[0];
-        let reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = function () {
-            $('#showAddImg').attr('src', this.result).css('display', 'block');
-            $('#text').css('display', 'block');
-            addFlag = 1;
-        }
-    }
-
-
-
-    layui.use('form', function () {
-        let form = layui.form;
-        let laydate = layui.laydate;
-        // 时间
-        laydate.render({
-            elem: '#art_date',
-            type: 'datetime'
+        // 上传文件单击事件
+        $('#addArtFile').click(function () {
+            $('#artFile')[0].click();
         })
 
-        // 获取分类数据
-        async function getCategoryDataFn() {
-            let res = await $.get('/categoryListData');
-            let str = '<option value=""></option>';
-            res.data.forEach(item => {
-                str += `<option value="${item.cate_id}">${item.cate_name}</option>`;
-            });
-            $('#cate_id').html(str);
-            form.render('select');
+        // 预览图片
+        window.artFileFn = function (artFile) {
+            let file = artFile.files[0];
+            let reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = function () {
+                $('#showAddImg').attr('src', this.result).css('display', 'block');
+                $('#text').css('display', 'block');
+                fileFlag = 1;
+            }
         }
-        getCategoryDataFn();
 
 
-        form.on('submit(addArticleBtn)', function (data) {
-            let formData = new FormData($('#addArticleForm')[0]);
-            let editorText = editor.txt.html();
-            formData.set('editorText', editorText);
-            formData.set('addFlag', addFlag);
 
-            // 添加
-            $.ajax({
-                type: 'post',
-                url: '/addArticleData',
-                data: formData,
-                contentType: false,
-                processData: false
-            }).then(res => {
-                if (res.code === 0) {
-                    layer.msg(res.message);
-                    location.replace('/article')
-                }
+        layui.use('form', function () {
+            let form = layui.form;
+            let laydate = layui.laydate;
+
+            // 时间
+            laydate.render({
+                elem: '#art_date',
+                type: 'datetime'
             })
-            return false;
+
+            // 获取分类数据
+            async function getCategoryDataFn() {
+                let res = await $.get('/categoryListData');
+                let str = '<option value=""></option>';
+                res.data.forEach(item => {
+                    str += `<option value="${item.cate_id}">${item.cate_name}</option>`;
+                });
+                $('#cate_id').html(str);
+                form.render('select');
+            }
+            getCategoryDataFn();
+
+            // 表单提交事件
+            form.on('submit(addArticleBtn)', function (data) {
+                let formData = new FormData($('#addArticleForm')[0]);
+                // 获取富文本内容
+                let editorText = editor.txt.html();
+                formData.set('editorText', editorText);
+                formData.set('fileFlag', fileFlag);
+                if (editorText == '') {
+                    layer.msg('内容不能为空')
+                    return false
+                }
+
+                // 添加
+                $.ajax({
+                    type: 'post',
+                    url: '/addArticleData',
+                    data: formData,
+                    contentType: false,
+                    processData: false
+                }).then(res => {
+                    if (res.code === 0) {
+                        layer.msg(res.message);
+                        location.replace('/article')
+                    }
+                })
+                return false;
+            })
         })
-    })
+    })()
 </script>
 {{/block}}

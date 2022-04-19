@@ -1,3 +1,5 @@
+<!-- 文章编辑页面 -->
+
 {{extend './common/page.html'}}
 
 {{block 'title'}}
@@ -11,12 +13,6 @@
         left: 870px;
         bottom: 105px;
     }
-
-    /* .wangeditor {
-        width: 600px;
-        position: relative;
-        border: 1px solid red;
-    } */
 
     #wangEditor {
         width: 835px;
@@ -86,7 +82,7 @@
 
                     <label class="layui-form-label">选择封面</label>
                     <div class="layui-input-inline" style="width: 110px;">
-                        <input type="file" name="edit_artPic" style="display: none;" id="edit_artPic"
+                        <input type="file" name="art_pic" style="display: none;" id="edit_artPic"
                             onchange="artFileFn(this)">
                         <span class="layui-btn layui-btn-primary layui-border-blue" id="editArtFile">上传图片</span>
                     </div>
@@ -120,106 +116,123 @@
 {{block 'script'}}
 
 <script>
-    let fileFlag = 0;
-    const reg = /\?id=(\d+)/
-    const [, id] = location.search.match(reg);
+    (function () {
+        // 判断用户是否上传图片
+        let fileFlag = 0;
+        // 获取id
+        const reg = /\?id=(\d+)/;
+        const [, id] = location.search.match(reg);
+        // 富文本
+        const E = window.wangEditor
+        const editor = new E("#wangEditor")
+        editor.create();
 
-    const E = window.wangEditor
-    const editor = new E("#wangEditor")
-    editor.create();
-
-
-
-    $('#editArtFile').click(function () {
-        $('#edit_artPic')[0].click()
-    })
-
-    function artFileFn(artFile) {
-        let file = artFile.files[0];
-        let reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = function () {
-            $('#showEditImg').attr('src', this.result).css('display', 'block');
-            $('#editText').css('display', 'block');
-            fileFlag = 1;
-        }
-    }
-
-
-    layui.use('form', async function () {
-        let form = layui.form;
-        let laydate = layui.laydate;
-        laydate.render({
-            elem: '#art_date',
-            type: 'datetime'
+        // 执行选择图片事件
+        $('#editArtFile').click(function () {
+            $('#edit_artPic')[0].click()
         })
 
-
-
-        async function getCategoryDataFn() {
-            let res = await $.get('/categoryListData');
-            let str = '<option value=""></option>';
-            res.data.forEach(item => {
-                str += `<option value="${item.cate_id}">${item.cate_name}</option>`;
-            });
-            $('#cate_id').html(str);
-            form.render('select');
+        // 图片预览
+        window.artFileFn = function (artFile) {
+            const file = artFile.files[0];
+            let reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = function () {
+                $('#showEditImg').attr('src', this.result).css('display', 'block');
+                $('#editText').css('display', 'block');
+                fileFlag = 1;
+            }
         }
-        getCategoryDataFn();
 
 
-        async function onlyArticleDataFn() {
-            let res = await $.get(`/onlyArticleData?id=${id}`);
-            let {
-                art_date,
-                art_pic,
-                art_content,
-                art_author,
-                art_id,
-                art_status,
-                art_title,
-                cate_id
-            } = res[0];
-            // 时间格式转换
-            art_date = moment(art_date).format('YYYY-MM-DD HH:mm:ss');
+        layui.use('form', async function () {
+            const form = layui.form;
+            const laydate = layui.laydate;
 
-            form.val("editArticleForm", {
-                art_date,
-                art_author,
-                art_id,
-                art_status,
-                art_title,
-                cate_id
-            });
-            $("#showEditImg").attr('src', art_pic).show();
-            $('#editText').show()
-            editor.txt.html(art_content)
-        }
-        onlyArticleDataFn();
-
-
-        form.on('submit(editArticleBtn)', function (data) {
-            let formData = new FormData($('#editArticleForm')[0]);
-            let editorText = editor.txt.html();
-            formData.set('art_id', id);
-            formData.set('fileFlag', fileFlag);
-            formData.set('editorText', editorText);
-
-            $.ajax({
-                type: 'put',
-                url: '/editArticleData',
-                data: formData,
-                contentType: false,
-                processData: false
-            }).then(res => {
-                if (res.code === 0) {
-                    layer.msg(res.message);
-                    location.replace('/article')
-                }
+            // 时间
+            laydate.render({
+                elem: '#art_date',
+                type: 'datetime'
             })
 
-            return false;
+
+
+            // 获取分类数据
+            async function getCategoryDataFn() {
+                let res = await $.get('/categoryListData');
+                let str = '<option value=""></option>';
+                res.data.forEach(item => {
+                    str += `<option value="${item.cate_id}">${item.cate_name}</option>`;
+                });
+                $('#cate_id').html(str);
+                form.render('select');
+            }
+            getCategoryDataFn();
+
+
+            // 回显文章数据
+            async function onlyArticleDataFn() {
+                let res = await $.get(`/onlyArticleData?id=${id}`);
+                let {
+                    art_date,
+                    art_pic,
+                    art_content,
+                    art_author,
+                    art_id,
+                    art_status,
+                    art_title,
+                    cate_id
+                } = res[0];
+                // 时间格式转换
+                art_date = moment(art_date).format('YYYY-MM-DD HH:mm:ss');
+                // 回显文章信息
+                form.val("editArticleForm", {
+                    art_date,
+                    art_author,
+                    art_id,
+                    art_status,
+                    art_title,
+                    cate_id
+                });
+                // 回显图片和富文本内容
+                $("#showEditImg").attr('src', art_pic).show();
+                $('#editText').show();
+                // 富文本内容
+                editor.txt.html(art_content)
+
+
+                // 监听编辑表单
+                form.on('submit(editArticleBtn)', function (data) {
+                    let formData = new FormData($('#editArticleForm')[0]);
+                    let editorText = editor.txt.html();
+                    formData.set('art_id', id);
+                    formData.set('fileFlag', fileFlag);
+                    formData.set('editorText', editorText);
+                    formData.set('picPath', art_pic);
+                    if (editorText == '') {
+                        layer.msg('文章内容不能为空');
+                        return false;
+                    }
+
+                    // 文章修改
+                    $.ajax({
+                        type: 'put',
+                        url: '/editArticleData',
+                        data: formData,
+                        contentType: false,
+                        processData: false
+                    }).then(res => {
+                        if (res.code === 0) {
+                            layer.msg(res.message);
+                            location.replace('/article')
+                        }
+                    })
+                    return false;
+                })
+
+            }
+            onlyArticleDataFn();
         })
-    })
+    })()
 </script>
 {{/block}}

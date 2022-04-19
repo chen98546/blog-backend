@@ -1,9 +1,11 @@
 // 分类控制器
 
-const query = require('../mysql/connection.js')
+const query = require('../mysql/connection.js');
+const method = require('../method/method.js');
 
 let CategoryCon = {};
 
+// 分类页面
 CategoryCon.category = (req, res) => {
     res.render('category.html')
 }
@@ -23,9 +25,7 @@ CategoryCon.categoryListData = async (req, res) => {
 
 // 添加
 CategoryCon.addCategory = async (req, res) => {
-    let {
-        cate_name
-    } = req.body;
+    method.bodyDataFn(req.body);
     let sql = `insert into tb_category(cate_name)values('${cate_name}')`;
     let data = await query(sql);
     res.json(data)
@@ -34,19 +34,9 @@ CategoryCon.addCategory = async (req, res) => {
 
 // 修改
 CategoryCon.editCategory = async (req, res) => {
-    let {
-        cate_id,
-        cate_name,
-    } = req.body
-
+    method.bodyDataFn(req.body);
     let sql = `update tb_category set cate_name = '${cate_name}' where cate_id = ${cate_id}`;
-    let data = await query(sql);
-
-    let responseData = {
-        code: 0,
-        message: '修改成功',
-    }
-
+    let responseData = method.isMessageFn(await query(sql), '修改成功');
     res.json(responseData)
 }
 
@@ -57,14 +47,9 @@ CategoryCon.delCategory = async (req, res) => {
         id
     } = req.query;
     let sql = `DELETE FROM tb_category WHERE cate_id = ${id}`;
-    let data = await query(sql);
-    let responseData = {
-        code: 0,
-        message: '删除成功'
-    }
-    res.json(responseData);
+    let responseData = method.isMessageFn(await query(sql), '删除成功');
+    res.json(responseData)
 }
-
 
 
 module.exports = CategoryCon;

@@ -3,6 +3,11 @@ const path = require('path');
 const express_template = require('express-art-template');
 const session = require('express-session');
 const cors = require('cors')
+const chokidar = require('chokidar');
+const execSh = require('exec-sh');
+
+
+
 
 const router = require('./router/router.js');
 const apiRouter = require('./router/apiRouter.js');
@@ -52,6 +57,22 @@ let {
 app.use(checkSessionAuth);
 
 app.use(router)
+
+
+
+
+// 监听目录controller的变化
+chokidar.watch('./controller').on('all', (event, path) => {
+    // 文件修改了，自动执行eslint检测语法
+    if (event == 'change') {
+        execSh("npx eslint ./controller", function (err) {
+            if (err) {
+                console.log("err", err.code);
+            }
+        });
+    }
+});
+
 
 app.listen(12580, () => {
     console.log('server is running at port 12580');

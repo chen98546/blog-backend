@@ -37,7 +37,7 @@ router.get('/getUsersData', UsersCon.getUsersData);
 // 注册页面
 router.get('/register', RegisterCon.register);
 // 上传注册信息
-router.post('/registerUsersData', upload.single("registerAvatar"), RegisterCon.registerUsersData);
+router.post('/registerUsersData', upload.single("u_avatar"), RegisterCon.registerUsersData);
 
 
 
@@ -84,7 +84,7 @@ router.get('/onlyArticleData', ArticleCon.onlyArticleData);
 // 添加
 router.post('/addArticleData', upload.single("art_pic"), ArticleCon.addArticleData)
 // 修改
-router.put('/editArticleData', upload.single("edit_artPic"), ArticleCon.editArticleData)
+router.put('/editArticleData', upload.single("art_pic"), ArticleCon.editArticleData)
 // 删除
 router.delete('/delArticle', ArticleCon.delArticle)
 
@@ -99,7 +99,7 @@ router.get('/settings', SettingsCon.settings);
 // 修改
 router.put('/editSettings',upload.single("set_logoPic"), SettingsCon.editSettings);
 // 个人信息修改
-router.put('/amendPersonalData', upload.single("personalAvatar"), SettingsCon.amendPersonalData);
+router.put('/amendPersonalData', upload.single("u_avatar"), SettingsCon.amendPersonalData);
 // 密码修改
 router.put('/editPwdForm', SettingsCon.editPwdForm);
 

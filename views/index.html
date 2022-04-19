@@ -1,3 +1,5 @@
+<!-- 后台首页 -->
+
 {{extend './common/page.html'}}
 
 {{block 'title'}}{{/block}}
@@ -28,50 +30,53 @@
 
 {{block 'script'}}
 <script>
-  let myChart = echarts.init(document.getElementById('main'))
+  (function () {
+    let myChart = echarts.init(document.getElementById('main'))
 
-  function chartFn(cateName, cateNum) {
-    let option = {
-      title: {
-        text: '文章分类统计',
+    // 数据统计图表
+    function chartFn(cateName, cateNum) {
+      let option = {
+        title: {
+          text: '文章分类统计',
 
-      },
-      tooltip: {},
-      legend: {
-        data: ['文章分类统计图']
-      },
-      xAxis: {
-        data: cateName
-      },
-      yAxis: {},
-      series: [{
-        name: '文章分类统计图',
-        data: cateNum,
-        type: 'bar',
-        itemStyle: {
-          color: '#99a7c3'
         },
-        barWidth: 50
-      }]
-    };
+        tooltip: {},
+        legend: {
+          data: ['文章分类统计图']
+        },
+        xAxis: {
+          data: cateName
+        },
+        yAxis: {},
+        series: [{
+          name: '文章分类统计图',
+          data: cateNum,
+          type: 'bar',
+          itemStyle: {
+            color: '#99a7c3'
+          },
+          barWidth: 50
+        }]
+      };
 
-    myChart.setOption(option);
+      myChart.setOption(option);
 
-  }
+    }
 
+    // 获取分类数据并转换echarts对应类型
+    async function chartDataFn() {
+      let res = await $.get('/categoryListData');
 
-  async function chartDataFn() {
-    let res = await $.get('/categoryListData');
+      let cateName = [];
+      let cateNum = [];
+      res.data.forEach(item => {
+        cateName.push(item.cate_name);
+        cateNum.push(item.count);
+      })
+      chartFn(cateName, cateNum);
 
-    let cateName = [];
-    let cateNum = [];
-    res.data.forEach(item => {
-      cateName.push(item.cate_name);
-      cateNum.push(item.count);
-    })
-    chartFn(cateName, cateNum);
-
-  }
-  chartDataFn()
+    }
+    chartDataFn()
+  })()
 </script>
 {{/block}}
